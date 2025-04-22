@@ -48,6 +48,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showGenerateButton, setShowGenerateButton] = useState(false);
   
   // Define steps for the resume building process
   const steps = [
@@ -90,6 +91,15 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    // Show the generate button when we're at the final step
+    if (currentStep === steps.length - 1) {
+      setShowGenerateButton(true);
+    } else {
+      setShowGenerateButton(false);
+    }
+  }, [currentStep, steps.length]);
 
   const addMessage = (content: string, type: MessageType = "user", formFields?: FormField[]) => {
     const newMessage: Message = {
@@ -138,7 +148,6 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
         }
       } else {
         // All steps complete, call the callback with collected data
-        onDataCollected(formData);
         addMessage("Your resume is ready! You can now preview and download it.", "system");
       }
       
@@ -180,12 +189,16 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
         }
       } else {
         // All steps complete, call the callback with collected data
-        onDataCollected(formData);
         addMessage("Your resume is ready! You can now preview and download it.", "system");
       }
       
       setLoading(false);
     }, 1000);
+  };
+
+  const handleGenerateResume = () => {
+    // Call the callback with the collected data
+    onDataCollected(formData);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -303,6 +316,16 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
             </Card>
           </div>
         )}
+        {showGenerateButton && (
+          <div className="flex justify-center mt-4">
+            <Button 
+              onClick={handleGenerateResume} 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+            >
+              Generate Resume
+            </Button>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -313,9 +336,9 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type your message..."
-            disabled={loading || messages.some(msg => msg.type === "form")}
+            disabled={loading || messages.some(msg => msg.type === "form") || showGenerateButton}
           />
-          <Button onClick={handleSendMessage} disabled={loading || messages.some(msg => msg.type === "form")}>
+          <Button onClick={handleSendMessage} disabled={loading || messages.some(msg => msg.type === "form") || showGenerateButton}>
             {loading ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (

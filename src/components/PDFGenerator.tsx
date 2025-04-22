@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { jsPDF } from "jspdf";
+import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 interface Experience {

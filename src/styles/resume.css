@@ -1,0 +1,122 @@
+
+/* Resume Preview and Print Styles */
+
+@media print {
+  /* Hide everything except the resume when printing */
+  body * {
+    visibility: hidden;
+  }
+  
+  #resume-pdf, #resume-pdf * {
+    visibility: visible;
+  }
+  
+  #resume-pdf {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 210mm; /* A4 width */
+    height: 297mm; /* A4 height */
+    margin: 0;
+    padding: 20mm;
+  }
+  
+  /* Remove any backgrounds and shadows for printing */
+  #resume-pdf {
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+  }
+}
+
+/* A4 paper simulation for the preview */
+.resume-a4 {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Resume section styles */
+.resume-section {
+  margin-bottom: 1.5rem;
+}
+
+.resume-section-title {
+  color: #2563eb;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Skills bubble style */
+.skill-bubble {
+  display: inline-block;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Experience item styles */
+.experience-item {
+  margin-bottom: 1rem;
+}
+
+.experience-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.experience-title {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.experience-date {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.experience-company {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.experience-description {
+  font-size: 0.875rem;
+  color: #4b5563;
+  white-space: pre-line;
+}
+
+/* Education item styles */
+.education-item {
+  margin-bottom: 1rem;
+}
+
+.education-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.education-degree {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.education-year {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.education-institution {
+  color: #374151;
+}

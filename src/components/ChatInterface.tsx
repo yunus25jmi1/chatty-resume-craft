@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,6 +33,30 @@ interface ChatInterfaceProps {
   onDataCollected: (data: Record<string, string>) => void;
 }
 
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  summary: string;
+  experiences: Experience[];
+  education: Education[];
+  skills: string;
+}
+
+interface Experience {
+  jobTitle: string;
+  company: string;
+  startDate: string;
+  endDate: string;
+  jobDescription: string;
+}
+
+interface Education {
+  degree: string;
+  institution: string;
+  gradYear: string;
+}
+
 const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -46,11 +69,19 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [formData, setFormData] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showGenerateButton, setShowGenerateButton] = useState(false);
-  
-  // Define steps for the resume building process
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    email: "",
+    phone: "",
+    summary: "",
+    experiences: [],
+    education: [],
+    skills: "",
+  });
+
+  // Updated steps array
   const steps = [
     { id: "name", question: "What's your full name?" },
     { id: "email", question: "What's your email address?" },
@@ -58,7 +89,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
     { id: "summary", question: "Please provide a brief professional summary about yourself.", formField: { type: "textarea" as FormFieldType } },
     { 
       id: "experience", 
-      question: "Let's add your work experience. Please provide details for your most recent job:",
+      question: "Let's add your work experience. You can add multiple entries.",
       formFields: [
         { id: "jobTitle", type: "text" as FormFieldType, label: "Job Title", placeholder: "e.g., Senior Developer", required: true },
         { id: "company", type: "text" as FormFieldType, label: "Company", placeholder: "e.g., Acme Inc.", required: true },
@@ -69,7 +100,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
     },
     { 
       id: "education", 
-      question: "Now, let's add your education:",
+      question: "Now, let's add your education details. You can add multiple entries.",
       formFields: [
         { id: "degree", type: "text" as FormFieldType, label: "Degree", placeholder: "e.g., Bachelor of Science", required: true },
         { id: "institution", type: "text" as FormFieldType, label: "Institution", placeholder: "e.g., Stanford University", required: true },
@@ -156,55 +187,62 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   };
 
   const handleFormSubmit = (formValues: Record<string, string>) => {
+    const currentStep = steps[currentStep];
+    
+    if (currentStep.id === "experience") {
+      setFormData(prev => ({
+        ...prev,
+        experiences: [...prev.experiences, formValues as unknown as Experience]
+      }));
+    } else if (currentStep.id === "education") {
+      setFormData(prev => ({
+        ...prev,
+        education: [...prev.education, formValues as unknown as Education]
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [currentStep.id]: formValues[currentStep.id] }));
+    }
+
+    // Add message to chat
     const formattedValues = Object.entries(formValues)
       .map(([key, value]) => `${key}: ${value}`)
       .join("\n");
     
     addMessage(formattedValues);
+
+    // Don't advance to next step for experience and education
+    if (currentStep.id === "experience" || currentStep.id === "education") {
+      addMessage("Would you like to add another entry? Click the '+' button or continue to the next section.", "system");
+    } else {
+      setLoading(true);
     
-    // Merge the form values with the existing form data
-    setFormData((prev) => ({ ...prev, ...formValues }));
-    
-    setLoading(true);
-    
-    // Simulate processing
-    setTimeout(() => {
-      const nextStep = currentStep + 1;
-      setCurrentStep(nextStep);
-      
-      if (nextStep < steps.length) {
-        // Add next question as system message
-        const nextQuestion = steps[nextStep];
+      // Simulate processing
+      setTimeout(() => {
+        const nextStep = currentStep + 1;
+        setCurrentStep(nextStep);
         
-        if (nextQuestion.formFields) {
-          addMessage(nextQuestion.question, "form", nextQuestion.formFields);
-        } else if (nextQuestion.formField) {
-          addMessage(nextQuestion.question, "form", [{ 
-            id: nextQuestion.id, 
-            type: nextQuestion.formField.type, 
-            label: nextQuestion.question 
-          }]);
+        if (nextStep < steps.length) {
+          // Add next question as system message
+          const nextQuestion = steps[nextStep];
+          
+          if (nextQuestion.formFields) {
+            addMessage(nextQuestion.question, "form", nextQuestion.formFields);
+          } else if (nextQuestion.formField) {
+            addMessage(nextQuestion.question, "form", [{ 
+              id: nextQuestion.id, 
+              type: nextQuestion.formField.type, 
+              label: nextQuestion.question 
+            }]);
+          } else {
+            addMessage(nextQuestion.question, "system");
+          }
         } else {
-          addMessage(nextQuestion.question, "system");
+          // All steps complete, call the callback with collected data
+          addMessage("Your resume is ready! You can now preview and download it.", "system");
         }
-      } else {
-        // All steps complete, call the callback with collected data
-        addMessage("Your resume is ready! You can now preview and download it.", "system");
-      }
-      
-      setLoading(false);
-    }, 1000);
-  };
-
-  const handleGenerateResume = () => {
-    // Call the callback with the collected data
-    onDataCollected(formData);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+        
+        setLoading(false);
+      }, 1000);
     }
   };
 
@@ -260,9 +298,35 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
             )}
           </div>
         ))}
-        <Button type="submit" className="w-full">Submit</Button>
+        <div className="flex gap-2">
+          <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+            {currentStep.id === "experience" || currentStep.id === "education" ? "Add Entry" : "Submit"}
+          </Button>
+          {(currentStep.id === "experience" || currentStep.id === "education") && (
+            <Button
+              type="button"
+              onClick={() => setCurrentStep(prev => prev + 1)}
+              variant="outline"
+              className="flex-1"
+            >
+              Continue
+            </Button>
+          )}
+        </div>
       </form>
     );
+  };
+
+  const handleGenerateResume = () => {
+    // Call the callback with the collected data
+    onDataCollected(formData as unknown as Record<string, string>);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   return (

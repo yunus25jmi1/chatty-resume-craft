@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
@@ -20,8 +19,8 @@ const ResumePreview = ({ resumeData }: ResumePreviewProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex flex-col md:flex-row md:justify-between items-center mb-4 p-4 border-b">
-        <h2 className="text-xl font-bold mb-3 md:mb-0">Resume Preview</h2>
+      <div className="flex flex-col md:flex-row md:justify-between items-center mb-4 p-4 border-b border-white/10">
+        <h2 className="text-xl font-bold mb-3 md:mb-0 text-gradient">Resume Preview</h2>
         <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto">
           <PDFGenerator resumeData={resumeData} resumeRef={resumeRef} />
           <Button 
@@ -36,10 +35,10 @@ const ResumePreview = ({ resumeData }: ResumePreviewProps) => {
       </div>
       
       <div className="flex-1 overflow-y-auto p-4">
-        <Card className="p-6 bg-white shadow-md max-w-[210mm] mx-auto print:shadow-none print:border-none" id="resume-pdf" ref={resumeRef}>
+        <Card className="p-6 bg-card text-card-foreground shadow-md max-w-[210mm] mx-auto print:shadow-none print:border-none glass-morphism" id="resume-pdf" ref={resumeRef}>
           {/* Header/Contact Info */}
-          <div className="border-b pb-4 mb-6">
-            <h1 className="text-3xl font-bold mb-2">{resumeData.name || "Your Name"}</h1>
+          <div className="border-b border-white/10 pb-4 mb-6">
+            <h1 className="text-3xl font-bold mb-2 text-gradient">{resumeData.name || "Your Name"}</h1>
             <div className="flex flex-wrap text-sm text-gray-600 gap-x-4">
               {resumeData.email && (
                 <div>Email: {resumeData.email}</div>
@@ -53,51 +52,55 @@ const ResumePreview = ({ resumeData }: ResumePreviewProps) => {
           {/* Summary Section */}
           {resumeData.summary && (
             <div className="mb-6">
-              <h2 className="text-xl font-bold mb-2 text-gray-800">Professional Summary</h2>
-              <p className="text-gray-700">{resumeData.summary}</p>
+              <h2 className="text-xl font-bold mb-2 text-gradient">Professional Summary</h2>
+              <p className="text-gray-300">{resumeData.summary}</p>
             </div>
           )}
           
           {/* Experience Section */}
-          {(resumeData.jobTitle || resumeData.company) && (
+          {resumeData.experiences?.length > 0 && (
             <div className="mb-6">
-              <h2 className="text-xl font-bold mb-2 text-gray-800">Experience</h2>
-              <div className="mb-4">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-semibold">{resumeData.jobTitle || "Position"}</h3>
-                  <div className="text-sm text-gray-600">
-                    {resumeData.startDate || "Start Date"} - {resumeData.endDate || "End Date"}
+              <h2 className="text-xl font-bold mb-4 text-gradient">Experience</h2>
+              {resumeData.experiences.map((exp, index) => (
+                <div key={index} className="mb-4 p-4 rounded-lg glass-morphism">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold text-white">{exp.jobTitle}</h3>
+                    <div className="text-sm text-gray-400">
+                      {exp.startDate} - {exp.endDate}
+                    </div>
                   </div>
+                  <div className="text-gray-300 mb-1">{exp.company}</div>
+                  <p className="text-sm text-gray-400">{exp.jobDescription}</p>
                 </div>
-                <div className="text-gray-700 mb-1">{resumeData.company || "Company"}</div>
-                <p className="text-sm text-gray-600">{resumeData.jobDescription || "Job description"}</p>
-              </div>
+              ))}
             </div>
           )}
           
           {/* Education Section */}
-          {(resumeData.degree || resumeData.institution) && (
+          {resumeData.education?.length > 0 && (
             <div className="mb-6">
-              <h2 className="text-xl font-bold mb-2 text-gray-800">Education</h2>
-              <div>
-                <div className="flex justify-between">
-                  <h3 className="font-semibold">{resumeData.degree || "Degree"}</h3>
-                  <div className="text-sm text-gray-600">{resumeData.gradYear || "Year"}</div>
+              <h2 className="text-xl font-bold mb-4 text-gradient">Education</h2>
+              {resumeData.education.map((edu, index) => (
+                <div key={index} className="mb-4 p-4 rounded-lg glass-morphism">
+                  <div className="flex justify-between">
+                    <h3 className="font-semibold text-white">{edu.degree}</h3>
+                    <div className="text-sm text-gray-400">{edu.gradYear}</div>
+                  </div>
+                  <div className="text-gray-300">{edu.institution}</div>
                 </div>
-                <div className="text-gray-700">{resumeData.institution || "Institution"}</div>
-              </div>
+              ))}
             </div>
           )}
           
           {/* Skills Section */}
           {resumeData.skills && (
             <div>
-              <h2 className="text-xl font-bold mb-2 text-gray-800">Skills</h2>
+              <h2 className="text-xl font-bold mb-2 text-gradient">Skills</h2>
               <div className="flex flex-wrap gap-2">
                 {resumeData.skills.split(",").map((skill, index) => (
                   <span 
                     key={index} 
-                    className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm"
+                    className="glass-morphism px-3 py-1 rounded-full text-sm text-gray-300"
                   >
                     {skill.trim()}
                   </span>

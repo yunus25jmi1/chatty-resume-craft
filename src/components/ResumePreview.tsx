@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
@@ -20,22 +19,23 @@ interface Education {
   gradYear: string;
 }
 
+interface ResumeData {
+  name: string;
+  email: string;
+  phone: string;
+  summary: string;
+  experiences: Experience[];
+  education: Education[];
+  skills: string;
+}
+
 interface ResumePreviewProps {
-  resumeData: {
-    name: string;
-    email: string;
-    phone: string;
-    summary: string;
-    experiences: Experience[];
-    education: Education[];
-    skills: string;
-  };
+  resumeData: ResumeData;
 }
 
 const ResumePreview = ({ resumeData }: ResumePreviewProps) => {
   const resumeRef = useRef<HTMLDivElement>(null);
   
-  // Function to handle print
   const handlePrint = () => {
     window.print();
   };
@@ -62,7 +62,7 @@ const ResumePreview = ({ resumeData }: ResumePreviewProps) => {
           {/* Header/Contact Info */}
           <div className="border-b border-white/10 pb-4 mb-6">
             <h1 className="text-3xl font-bold mb-2 text-gradient">{resumeData.name || "Your Name"}</h1>
-            <div className="flex flex-wrap text-sm text-gray-600 gap-x-4">
+            <div className="flex flex-wrap text-sm text-gray-400 gap-x-4">
               {resumeData.email && (
                 <div>Email: {resumeData.email}</div>
               )}

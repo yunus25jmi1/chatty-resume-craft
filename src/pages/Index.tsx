@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChatInterface from "@/components/ChatInterface";
@@ -12,15 +11,32 @@ import AnimatedLogo from "@/components/AnimatedLogo";
 import { useKeyShortcuts } from "@/hooks/use-key-shortcuts";
 import WelcomeMessage from "@/components/WelcomeMessage";
 
+interface ResumeData {
+  name: string;
+  email: string;
+  phone: string;
+  summary: string;
+  experiences: Experience[];
+  education: Education[];
+  skills: string;
+}
+
 const Index = () => {
-  const [resumeData, setResumeData] = useState<Record<string, string>>({});
+  const [resumeData, setResumeData] = useState<ResumeData>({
+    name: '',
+    email: '',
+    phone: '',
+    summary: '',
+    experiences: [],
+    education: [],
+    skills: ''
+  });
   const [activeTab, setActiveTab] = useState("chat");
   const [dataCollected, setDataCollected] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const isMobile = useIsMobile();
   
-  // Add keyboard shortcuts
   useKeyShortcuts([
     {
       key: "p",
@@ -42,19 +58,17 @@ const Index = () => {
     },
   ]);
 
-  const handleDataCollected = async (data: Record<string, string>) => {
+  const handleDataCollected = async (data: ResumeData) => {
     setIsEnhancing(true);
     try {
-      // In a real implementation, we would enhance the resume with Gemini API
       const enhancedData = await enhanceResumeWithAI(data);
-      setResumeData(enhancedData);
+      setResumeData(enhancedData as ResumeData);
       setDataCollected(true);
       setActiveTab("preview");
       toast.success("Resume created successfully!");
     } catch (error) {
       console.error("Error enhancing resume:", error);
       toast.error("There was an error processing your resume. Please try again.");
-      // Still set the data without enhancements
       setResumeData(data);
       setDataCollected(true);
       setActiveTab("preview");

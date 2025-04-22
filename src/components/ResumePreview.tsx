@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
@@ -5,8 +6,30 @@ import { toast } from "sonner";
 import { Download, Printer, Check } from "lucide-react";
 import PDFGenerator from "./PDFGenerator";
 
+interface Experience {
+  jobTitle: string;
+  company: string;
+  startDate: string;
+  endDate: string;
+  jobDescription: string;
+}
+
+interface Education {
+  degree: string;
+  institution: string;
+  gradYear: string;
+}
+
 interface ResumePreviewProps {
-  resumeData: Record<string, string>;
+  resumeData: {
+    name: string;
+    email: string;
+    phone: string;
+    summary: string;
+    experiences: Experience[];
+    education: Education[];
+    skills: string;
+  };
 }
 
 const ResumePreview = ({ resumeData }: ResumePreviewProps) => {
@@ -58,7 +81,7 @@ const ResumePreview = ({ resumeData }: ResumePreviewProps) => {
           )}
           
           {/* Experience Section */}
-          {resumeData.experiences?.length > 0 && (
+          {resumeData.experiences && resumeData.experiences.length > 0 && (
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-4 text-gradient">Experience</h2>
               {resumeData.experiences.map((exp, index) => (
@@ -77,7 +100,7 @@ const ResumePreview = ({ resumeData }: ResumePreviewProps) => {
           )}
           
           {/* Education Section */}
-          {resumeData.education?.length > 0 && (
+          {resumeData.education && resumeData.education.length > 0 && (
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-4 text-gradient">Education</h2>
               {resumeData.education.map((edu, index) => (

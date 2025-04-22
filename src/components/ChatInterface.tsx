@@ -1,9 +1,10 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, User, Loader2 } from "lucide-react";
+import { ArrowRight, User, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 // Define the message types
@@ -33,16 +34,6 @@ interface ChatInterfaceProps {
   onDataCollected: (data: Record<string, string>) => void;
 }
 
-interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  summary: string;
-  experiences: Experience[];
-  education: Education[];
-  skills: string;
-}
-
 interface Experience {
   jobTitle: string;
   company: string;
@@ -55,6 +46,24 @@ interface Education {
   degree: string;
   institution: string;
   gradYear: string;
+}
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  summary: string;
+  experiences: Experience[];
+  education: Education[];
+  skills: string;
+}
+
+// Define step interface
+interface Step {
+  id: string;
+  question: string;
+  formField?: { type: FormFieldType };
+  formFields?: FormField[];
 }
 
 const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
@@ -82,7 +91,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   });
 
   // Updated steps array
-  const steps = [
+  const steps: Step[] = [
     { id: "name", question: "What's your full name?" },
     { id: "email", question: "What's your email address?" },
     { id: "phone", question: "What's your phone number?" },
@@ -187,20 +196,20 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   };
 
   const handleFormSubmit = (formValues: Record<string, string>) => {
-    const currentStep = steps[currentStep];
+    const stepItem = steps[currentStep];
     
-    if (currentStep.id === "experience") {
+    if (stepItem.id === "experience") {
       setFormData(prev => ({
         ...prev,
         experiences: [...prev.experiences, formValues as unknown as Experience]
       }));
-    } else if (currentStep.id === "education") {
+    } else if (stepItem.id === "education") {
       setFormData(prev => ({
         ...prev,
         education: [...prev.education, formValues as unknown as Education]
       }));
     } else {
-      setFormData(prev => ({ ...prev, [currentStep.id]: formValues[currentStep.id] }));
+      setFormData(prev => ({ ...prev, [stepItem.id]: formValues[stepItem.id] }));
     }
 
     // Add message to chat
@@ -211,7 +220,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
     addMessage(formattedValues);
 
     // Don't advance to next step for experience and education
-    if (currentStep.id === "experience" || currentStep.id === "education") {
+    if (stepItem.id === "experience" || stepItem.id === "education") {
       addMessage("Would you like to add another entry? Click the '+' button or continue to the next section.", "system");
     } else {
       setLoading(true);
@@ -300,9 +309,9 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
         ))}
         <div className="flex gap-2">
           <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
-            {currentStep.id === "experience" || currentStep.id === "education" ? "Add Entry" : "Submit"}
+            {steps[currentStep].id === "experience" || steps[currentStep].id === "education" ? "Add Entry" : "Submit"}
           </Button>
-          {(currentStep.id === "experience" || currentStep.id === "education") && (
+          {(steps[currentStep].id === "experience" || steps[currentStep].id === "education") && (
             <Button
               type="button"
               onClick={() => setCurrentStep(prev => prev + 1)}

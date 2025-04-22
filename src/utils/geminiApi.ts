@@ -3,6 +3,30 @@
 // In a real implementation, we would import the Google Generative AI package
 // and use it to make requests to the Gemini API
 
+interface Experience {
+  jobTitle: string;
+  company: string;
+  startDate: string;
+  endDate: string;
+  jobDescription: string;
+}
+
+interface Education {
+  degree: string;
+  institution: string;
+  gradYear: string;
+}
+
+interface ResumeData {
+  name: string;
+  email: string;
+  phone: string;
+  summary: string;
+  experiences: Experience[];
+  education: Education[];
+  skills: string;
+}
+
 export interface GeminiApiOptions {
   prompt: string;
   temperature?: number;
@@ -32,7 +56,7 @@ export const generateWithGemini = async (options: GeminiApiOptions): Promise<str
 };
 
 // Function to enhance resume data with AI suggestions
-export const enhanceResumeWithAI = async (resumeData: Record<string, string>): Promise<Record<string, string>> => {
+export const enhanceResumeWithAI = async (resumeData: ResumeData): Promise<ResumeData> => {
   console.log("Enhancing resume with AI (simulated):", resumeData);
   
   // In a real implementation, we would enhance different parts of the resume
@@ -43,7 +67,7 @@ export const enhanceResumeWithAI = async (resumeData: Record<string, string>): P
 };
 
 // Function to generate PDF formatting suggestions
-export const generatePDFSuggestions = async (resumeData: Record<string, string>): Promise<string> => {
+export const generatePDFSuggestions = async (resumeData: ResumeData): Promise<string> => {
   console.log("Generating PDF suggestions with AI (simulated):", resumeData);
   
   // Simulate API delay

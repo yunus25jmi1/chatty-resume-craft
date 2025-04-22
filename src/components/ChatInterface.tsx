@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, User, Loader2, Plus } from "lucide-react";
-import { toast } from "sonner";
 
 // Define the message types
 type MessageType = "user" | "system" | "error" | "form";
@@ -30,10 +29,6 @@ interface Message {
   formFields?: FormField[];
 }
 
-interface ChatInterfaceProps {
-  onDataCollected: (data: Record<string, string>) => void;
-}
-
 interface Experience {
   jobTitle: string;
   company: string;
@@ -48,7 +43,7 @@ interface Education {
   gradYear: string;
 }
 
-interface FormData {
+interface ResumeData {
   name: string;
   email: string;
   phone: string;
@@ -56,6 +51,10 @@ interface FormData {
   experiences: Experience[];
   education: Education[];
   skills: string;
+}
+
+interface ChatInterfaceProps {
+  onDataCollected: (data: ResumeData) => void;
 }
 
 // Define step interface
@@ -80,7 +79,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showGenerateButton, setShowGenerateButton] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<ResumeData>({
     name: "",
     email: "",
     phone: "",
@@ -161,7 +160,8 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
     
     // Save form data from the current step
     if (currentStep < steps.length) {
-      setFormData((prev) => ({ ...prev, [steps[currentStep].id]: input }));
+      const stepId = steps[currentStep].id;
+      setFormData((prev) => ({ ...prev, [stepId]: input }));
     }
     
     setLoading(true);
@@ -196,20 +196,20 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   };
 
   const handleFormSubmit = (formValues: Record<string, string>) => {
-    const stepItem = steps[currentStep];
+    const stepId = steps[currentStep].id;
     
-    if (stepItem.id === "experience") {
+    if (stepId === "experience") {
       setFormData(prev => ({
         ...prev,
         experiences: [...prev.experiences, formValues as unknown as Experience]
       }));
-    } else if (stepItem.id === "education") {
+    } else if (stepId === "education") {
       setFormData(prev => ({
         ...prev,
         education: [...prev.education, formValues as unknown as Education]
       }));
     } else {
-      setFormData(prev => ({ ...prev, [stepItem.id]: formValues[stepItem.id] }));
+      setFormData(prev => ({ ...prev, [stepId]: formValues[stepId] }));
     }
 
     // Add message to chat
@@ -220,7 +220,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
     addMessage(formattedValues);
 
     // Don't advance to next step for experience and education
-    if (stepItem.id === "experience" || stepItem.id === "education") {
+    if (stepId === "experience" || stepId === "education") {
       addMessage("Would you like to add another entry? Click the '+' button or continue to the next section.", "system");
     } else {
       setLoading(true);
@@ -267,14 +267,14 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
       <form onSubmit={handleSubmit} className="space-y-4 mt-2">
         {fields.map((field) => (
           <div key={field.id} className="space-y-2">
-            <label htmlFor={field.id} className="text-sm font-medium text-gray-700">
+            <label htmlFor={field.id} className="text-sm font-medium text-gray-300">
               {field.label} {field.required && <span className="text-red-500">*</span>}
             </label>
             {field.type === "textarea" ? (
               <Textarea
                 id={field.id}
                 placeholder={field.placeholder}
-                className="w-full"
+                className="w-full bg-slate-800 border-gray-700 text-white"
                 required={field.required}
                 value={formValues[field.id] || ""}
                 onChange={(e) => setFormValues((prev) => ({ ...prev, [field.id]: e.target.value }))}
@@ -282,7 +282,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
             ) : field.type === "options" && field.options ? (
               <select
                 id={field.id}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-slate-800 border-gray-700 text-white"
                 required={field.required}
                 value={formValues[field.id] || ""}
                 onChange={(e) => setFormValues((prev) => ({ ...prev, [field.id]: e.target.value }))}
@@ -299,7 +299,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
                 id={field.id}
                 type="text"
                 placeholder={field.placeholder}
-                className="w-full"
+                className="w-full bg-slate-800 border-gray-700 text-white"
                 required={field.required}
                 value={formValues[field.id] || ""}
                 onChange={(e) => setFormValues((prev) => ({ ...prev, [field.id]: e.target.value }))}
@@ -308,7 +308,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
           </div>
         ))}
         <div className="flex gap-2">
-          <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button type="submit" className="flex-1 bg-blue-600 text-white hover:bg-blue-700">
             {steps[currentStep].id === "experience" || steps[currentStep].id === "education" ? "Add Entry" : "Submit"}
           </Button>
           {(steps[currentStep].id === "experience" || steps[currentStep].id === "education") && (
@@ -316,7 +316,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
               type="button"
               onClick={() => setCurrentStep(prev => prev + 1)}
               variant="outline"
-              className="flex-1"
+              className="flex-1 border-gray-600 hover:bg-slate-700"
             >
               Continue
             </Button>
@@ -328,7 +328,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
 
   const handleGenerateResume = () => {
     // Call the callback with the collected data
-    onDataCollected(formData as unknown as Record<string, string>);
+    onDataCollected(formData);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -339,7 +339,7 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-slate-900">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
@@ -351,18 +351,18 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
             <Card
               className={`max-w-[80%] p-3 ${
                 message.type === "user"
-                  ? "bg-blue-100 border-blue-200"
+                  ? "bg-blue-800 border-blue-700"
                   : message.type === "error"
-                  ? "bg-red-100 border-red-200"
+                  ? "bg-red-900 border-red-800"
                   : message.type === "form"
-                  ? "bg-gray-50 border-gray-200 w-full max-w-lg"
-                  : "bg-white"
+                  ? "bg-slate-800 border-slate-700 w-full max-w-lg"
+                  : "bg-slate-800 border-slate-700"
               }`}
             >
               {message.type === "user" && (
                 <div className="flex items-center justify-end mb-1">
-                  <div className="text-xs text-gray-500 mr-1">You</div>
-                  <div className="bg-blue-500 rounded-full p-1">
+                  <div className="text-xs text-gray-400 mr-1">You</div>
+                  <div className="bg-blue-600 rounded-full p-1">
                     <User size={12} className="text-white" />
                   </div>
                 </div>
@@ -370,21 +370,21 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
               
               {message.type === "form" ? (
                 <div>
-                  <div className="text-sm mb-2">{message.content}</div>
+                  <div className="text-sm mb-2 text-gray-200">{message.content}</div>
                   {message.formFields && <FormComponent fields={message.formFields} />}
                 </div>
               ) : (
-                <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                <div className="text-sm whitespace-pre-wrap text-gray-200">{message.content}</div>
               )}
             </Card>
           </div>
         ))}
         {loading && (
           <div className="flex justify-start">
-            <Card className="max-w-[80%] p-3 bg-white">
+            <Card className="max-w-[80%] p-3 bg-slate-800 border-slate-700">
               <div className="flex items-center space-x-2">
-                <Loader2 size={16} className="animate-spin" />
-                <div className="text-sm text-gray-500">Thinking...</div>
+                <Loader2 size={16} className="animate-spin text-blue-400" />
+                <div className="text-sm text-gray-400">Thinking...</div>
               </div>
             </Card>
           </div>
@@ -402,16 +402,21 @@ const ChatInterface = ({ onDataCollected }: ChatInterfaceProps) => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t p-4">
+      <div className="border-t border-slate-700 p-4">
         <div className="flex space-x-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type your message..."
+            className="bg-slate-800 border-slate-700 text-white"
             disabled={loading || messages.some(msg => msg.type === "form") || showGenerateButton}
           />
-          <Button onClick={handleSendMessage} disabled={loading || messages.some(msg => msg.type === "form") || showGenerateButton}>
+          <Button 
+            onClick={handleSendMessage} 
+            disabled={loading || messages.some(msg => msg.type === "form") || showGenerateButton}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
             {loading ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (

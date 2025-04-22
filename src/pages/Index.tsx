@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChatInterface from "@/components/ChatInterface";
@@ -10,6 +11,20 @@ import { toast } from "sonner";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import { useKeyShortcuts } from "@/hooks/use-key-shortcuts";
 import WelcomeMessage from "@/components/WelcomeMessage";
+
+interface Experience {
+  jobTitle: string;
+  company: string;
+  startDate: string;
+  endDate: string;
+  jobDescription: string;
+}
+
+interface Education {
+  degree: string;
+  institution: string;
+  gradYear: string;
+}
 
 interface ResumeData {
   name: string;
@@ -78,12 +93,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <header className="border-b bg-white shadow-sm py-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-950 to-slate-900 text-gray-100">
+      <header className="border-b border-white/10 bg-slate-900/50 shadow-md py-4">
         <ResponsiveWrapper>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <AnimatedLogo className="mb-1 md:mb-0" />
-            <p className="text-gray-600 text-xs md:text-sm">Build your professional resume with AI assistance - no signup required</p>
+            <p className="text-gray-400 text-xs md:text-sm">Build your professional resume with AI assistance - no signup required</p>
           </div>
         </ResponsiveWrapper>
       </header>
@@ -95,7 +110,7 @@ const Index = () => {
           </div>
         ) : (
           <>
-            <Card className="flex-1 flex flex-col overflow-hidden">
+            <Card className="flex-1 flex flex-col overflow-hidden bg-slate-800/50 border-white/10">
               <Tabs 
                 defaultValue="chat" 
                 value={activeTab}
@@ -103,9 +118,9 @@ const Index = () => {
                 className="flex-1 flex flex-col"
               >
                 <div className="px-2 md:px-4 pt-2 md:pt-4">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="chat">Chat Interface</TabsTrigger>
-                    <TabsTrigger value="preview" disabled={!dataCollected}>Resume Preview</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 bg-slate-700/50">
+                    <TabsTrigger value="chat" className="data-[state=active]:bg-blue-600">Chat Interface</TabsTrigger>
+                    <TabsTrigger value="preview" disabled={!dataCollected} className="data-[state=active]:bg-blue-600">Resume Preview</TabsTrigger>
                   </TabsList>
                 </div>
                 
@@ -123,14 +138,14 @@ const Index = () => {
               </Tabs>
             </Card>
             
-            <footer className="mt-4 md:mt-8 text-center text-gray-500 text-xs md:text-sm px-2">
+            <footer className="mt-4 md:mt-8 text-center text-gray-400 text-xs md:text-sm px-2">
               <p className="mb-1">
                 ChattyResume uses AI to help create professional resumes. Your data is never stored on our servers.
               </p>
               <div className="flex justify-center space-x-4 text-xs">
                 <span>Keyboard shortcuts: </span>
-                <span><kbd className="px-1 py-0.5 bg-gray-100 rounded border">Ctrl+Tab</kbd> Switch tabs</span>
-                <span><kbd className="px-1 py-0.5 bg-gray-100 rounded border">Ctrl+P</kbd> Print</span>
+                <span><kbd className="px-1 py-0.5 bg-gray-700 rounded border border-gray-600">Ctrl+Tab</kbd> Switch tabs</span>
+                <span><kbd className="px-1 py-0.5 bg-gray-700 rounded border border-gray-600">Ctrl+P</kbd> Print</span>
               </div>
             </footer>
           </>

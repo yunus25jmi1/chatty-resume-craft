@@ -1,8 +1,8 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState, useRef } from "react";
-import { toast } from "sonner";
-import { Download, Printer, Check } from "lucide-react";
+import { useRef } from "react";
+import { Printer } from "lucide-react";
 import PDFGenerator from "./PDFGenerator";
 
 interface Experience {

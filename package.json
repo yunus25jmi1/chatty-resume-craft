@@ -8,6 +8,12 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:report": "eslint . --format=json --output-file=eslint-report.json",
+    "type-check": "tsc --noEmit",
+    "check:unused": "ts-unused-exports tsconfig.json --excludePathsFromReport='node_modules;dist;build'",
+    "check:deps": "depcheck",
+    "quality": "npm run lint && npm run type-check",
     "preview": "vite preview"
   },
   "dependencies": {

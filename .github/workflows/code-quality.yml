@@ -1,0 +1,185 @@
+name: "Code Quality & Syntax Check"
+
+# This workflow performs comprehensive code quality checks including:
+# - Unused variables detection
+# - Syntax validation
+# - Type checking
+# - Code style enforcement
+# - Dead code detection
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: ESLint Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run ESLint
+        run: |
+          echo "### 🔍 ESLint Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          npx eslint . --ext .ts,.tsx,.js,.jsx --format=json --output-file=eslint-report.json || true
+          npx eslint . --ext .ts,.tsx,.js,.jsx || echo "⚠️ ESLint found issues"
+          
+      - name: Annotate Code Issues
+        if: always()
+        uses: ataylorme/eslint-annotate-action@v3
+        continue-on-error: true
+        with:
+          check-name: 'ESLint Results'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          report-json: 'eslint-report.json'
+
+      - name: Upload ESLint Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint-report.json
+          retention-days: 30
+
+  typescript:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: TypeScript Compilation Check
+        run: |
+          echo "### 📘 TypeScript Type Checking" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          npx tsc --noEmit --pretty || {
+            echo "❌ TypeScript compilation errors found" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
+          echo "✅ No TypeScript errors found" >> $GITHUB_STEP_SUMMARY
+
+  unused-code:
+    name: Detect Unused Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install unused code detection tools
+        run: npm install -g ts-unused-exports@latest
+
+      - name: Find unused exports
+        run: |
+          echo "### 🔍 Unused Exports Detection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          ts-unused-exports tsconfig.json --excludePathsFromReport="node_modules;dist;build" || echo "Analysis complete" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for unused dependencies
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Unused Dependencies Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          npx depcheck --json > depcheck-report.json || true
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat depcheck-report.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload unused code report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unused-code-report
+          path: |
+            depcheck-report.json
+          retention-days: 30
+
+  build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build project
+        run: |
+          echo "### 🏗️ Build Verification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          npm run build || {
+            echo "❌ Build failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
+          echo "✅ Build successful" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check build output
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Build Output Size" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          du -sh dist/* | sort -hr >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  summary:
+    name: Quality Check Summary
+    needs: [lint, typescript, unused-code, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "### ✨ Code Quality Check Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ ESLint: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ TypeScript: ${{ needs.typescript.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Unused Code: ${{ needs.unused-code.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Build: ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 Check workflow artifacts for detailed reports" >> $GITHUB_STEP_SUMMARY

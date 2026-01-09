@@ -48,7 +48,7 @@ const Index = () => {
   });
   const [activeTab, setActiveTab] = useState("chat");
   const [dataCollected, setDataCollected] = useState(false);
-  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [_isEnhancing, setIsEnhancing] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const isMobile = useIsMobile();
   

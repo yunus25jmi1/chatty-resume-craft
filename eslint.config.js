@@ -46,5 +46,12 @@ export default tseslint.config(
       // TypeScript specific
       "@typescript-eslint/no-explicit-any": "warn",
     },
+  },
+  {
+    // Disable react-refresh rule for UI component files that export both components and utilities
+    files: ["**/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
   }
 );

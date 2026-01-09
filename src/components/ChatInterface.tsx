@@ -1,10 +1,11 @@
 
+import * as React from "react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, User, Loader2, Plus } from "lucide-react";
+import { ArrowRight, User, Loader2 } from "lucide-react";
 
 // Define the message types
 type MessageType = "user" | "system" | "error" | "form";

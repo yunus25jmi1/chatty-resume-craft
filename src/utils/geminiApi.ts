@@ -37,7 +37,7 @@ export interface GeminiApiOptions {
 
 // Placeholder function that would be replaced with actual API call
 export const generateWithGemini = async (options: GeminiApiOptions): Promise<string> => {
-  console.log("Generating with Gemini API (simulated):", options);
+  console.info("Generating with Gemini API (simulated):", options);
   
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -57,7 +57,7 @@ export const generateWithGemini = async (options: GeminiApiOptions): Promise<str
 
 // Function to enhance resume data with AI suggestions
 export const enhanceResumeWithAI = async (resumeData: ResumeData): Promise<ResumeData> => {
-  console.log("Enhancing resume with AI (simulated):", resumeData);
+  console.info("Enhancing resume with AI (simulated):", resumeData);
   
   // In a real implementation, we would enhance different parts of the resume
   // using specific prompts for each section
@@ -68,7 +68,7 @@ export const enhanceResumeWithAI = async (resumeData: ResumeData): Promise<Resum
 
 // Function to generate PDF formatting suggestions
 export const generatePDFSuggestions = async (resumeData: ResumeData): Promise<string> => {
-  console.log("Generating PDF suggestions with AI (simulated):", resumeData);
+  console.info("Generating PDF suggestions with AI (simulated):", resumeData);
   
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));

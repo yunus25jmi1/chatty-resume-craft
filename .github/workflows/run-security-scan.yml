@@ -1,0 +1,101 @@
+name: "Run Security Scan"
+
+# This workflow provides a convenient way to manually trigger security scans
+# It runs CodeQL analysis and dependency checks on demand
+
+on:
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan to run'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - codeql-only
+          - dependencies-only
+
+jobs:
+  trigger-codeql:
+    name: Trigger CodeQL Analysis
+    if: ${{ github.event.inputs.scan_type == 'full' || github.event.inputs.scan_type == 'codeql-only' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Trigger CodeQL Workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'codeql.yml',
+              ref: context.ref
+            });
+            console.log('✅ CodeQL workflow triggered successfully');
+
+  dependency-scan:
+    name: NPM Audit & Dependency Check
+    if: ${{ github.event.inputs.scan_type == 'full' || github.event.inputs.scan_type == 'dependencies-only' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run npm audit
+        run: |
+          echo "### 🔍 NPM Security Audit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          npm audit --audit-level=moderate || true
+          if npm audit --audit-level=moderate; then
+            echo "✅ No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Vulnerabilities detected - see details above" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for outdated packages
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Outdated Dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          npm outdated || true
+
+      - name: Generate dependency tree
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌳 Dependency Overview" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          npm list --depth=0 >> $GITHUB_STEP_SUMMARY || true
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  security-summary:
+    name: Security Scan Summary
+    needs: [trigger-codeql, dependency-scan]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summary
+        run: |
+          echo "### 🔒 Security Scan Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Scan Type:** ${{ github.event.inputs.scan_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 Check the Security tab and workflow logs for detailed results" >> $GITHUB_STEP_SUMMARY
